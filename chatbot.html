@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Consultor Ortográfico</title>
+    <style>
+        /* Estilo básico para el widget */
+        #chatbot {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+            flex-direction: column;
+        }
+        #chatbot-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #chatbot-body {
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        #chatbot-input {
+            display: flex;
+        }
+        #chatbot-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        #chatbot-input button {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Widget del chatbot -->
+    <div id="chatbot">
+        <div id="chatbot-header">Consultor Ortográfico</div>
+        <div id="chatbot-body"></div>
+        <div id="chatbot-input">
+            <input type="text" id="user-input" placeholder="Escribe tu texto aquí...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        const chatbot = document.getElementById('chatbot');
+        const chatbotBody = document.getElementById('chatbot-body');
+        const userInput = document.getElementById('user-input');
+
+        // Mostrar/ocultar el chatbot
+        document.getElementById('chatbot-header').addEventListener('click', () => {
+            chatbot.style.display = chatbot.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        // Enviar mensaje al backend
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Agregar el mensaje del usuario al chat
+            chatbotBody.innerHTML += `<div><strong>Tú:</strong> ${message}</div>`;
+
+            // Limpiar el input
+            userInput.value = '';
+
+            // Llamar a la API de Qwen
+            const response = await fetch('https://api.qwen.aliyun.com/v1/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer TU_CLAVE_DE_API_AQUI',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: `Eres un consultor ortográfico. Corrige el siguiente texto: "${message}"`,
+                    max_tokens: 100,
+                    temperature: 0.2
+                })
+            });
+
+            const data = await response.json();
+            chatbotBody.innerHTML += `<div><strong>Chatbot:</strong> ${data.choices[0].text}</div>`;
+            chatbotBody.scrollTop = chatbotBody.scrollHeight; // Scroll hacia abajo
+        }
+    </script>
+</body>
+</html>
